@@ -1,0 +1,31 @@
+{
+    "name": "Python学习助手",
+    "version": {
+        "name": "1.0.0",
+        "code": "100"
+    },
+    "description": "零基础学Python，轻松入门",
+    "launch_path": "index.html",
+    "icons": {
+        "72": "icon.png",
+        "96": "icon.png",
+        "128": "icon.png",
+        "144": "icon.png"
+    },
+    "developer": {
+        "name": "LeeMeng",
+        "email": ""
+    },
+    "permissions": {
+        "Storage": {
+            "description": "存储学习进度"
+        }
+    },
+    "plus": {
+        "splashscreen": {
+            "autoclose": true
+        },
+        "runmode": "liber",
+        "signature": "Sk9JTiBVUyBtYWlsdG86aHIyMDIxQDE2My5jb20="
+    }
+}

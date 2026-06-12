@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Python学习助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .app {
+            max-width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .progress-bar {
+            margin-top: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4ade80;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        /* 课程列表 */
+        .course-list {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .course-item {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .course-item:active {
+            transform: scale(0.98);
+        }
+        
+        .course-item.completed {
+            border-left-color: #4ade80;
+            background: #0f2e1f;
+        }
+        
+        .course-item.completed .course-title::before {
+            content: '✅ ';
+        }
+        
+        .course-title {
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #e0e0e0;
+        }
+        
+        .course-desc {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.5;
+        }
+        
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            display: flex;
+            background: #16213e;
+            padding: 10px 0;
+            position: sticky;
+            bottom: 0;
+            border-top: 1px solid #2a2a4a;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .nav-item.active {
+            color: #667eea;
+        }
+        
+        .nav-item .icon {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .nav-item .label {
+            font-size: 11px;
+        }
+        
+        /* 课程详情页 */
+        .lesson-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            z-index: 200;
+            flex-direction: column;
+        }
+        
+        .lesson-page.active {
+            display: flex;
+        }
+        
+        .lesson-header {
+            background: #16213e;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .back-btn {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .lesson-title {
+            font-size: 18px;
+            flex: 1;
+        }
+        
+        .lesson-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            line-height: 1.8;
+        }
+        
+        .lesson-content h3 {
+            color: #667eea;
+            margin: 20px 0 10px;
+        }
+        
+        .lesson-content p {
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        
+        .code-block {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid #30363d;
+        }
+        
+        .code-block pre {
+            color: #7ee787;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .lesson-actions {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .btn:active {
+            opacity: 0.8;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #2a2a4a;
+            color: #ccc;
+        }
+        
+        .btn-success {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+        
+        /* 统计页 */
+        .stats-page {
+            display: none;
+            padding: 20px;
+        }
+        
+        .stats-page.active {
+            display: block;
+        }
+        
+        .stat-card {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        /* 主题切换 */
+        .theme-light {
+            background: #f0f0f0 !important;
+            color: #333 !important;
+        }
+        
+        .theme-light .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .theme-light .course-item {
+            background: #fff;
+            color: #333;
+        }
+        
+        .theme-light .course-title {
+            color: #333;
+        }
+        
+        .theme-light .course-desc {
+            color: #666;
+        }
+        
+        .theme-light .bottom-nav {
+            background: #fff;
+            border-top-color: #ddd;
+        }
+        
+        .theme-light .lesson-page {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .theme-light .lesson-header {
+            background: #fff;
+        }
+        
+        .theme-light .code-block {
+            background: #f6f8fa;
+            border-color: #e1e4e8;
+        }
+        
+        .theme-light .code-block pre {
+            color: #24292e;
+        }
+        
+        .theme-light .lesson-content p {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 主页面 -->
+        <div id="mainPage">
+            <div class="header">
+                <h1>🐍 Python学习助手</h1>
+                <div class="subtitle">零基础学Python，轻松入门</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">已完成 0/24 课</div>
+            </div>
+            
+            <div class="course-list" id="courseList">
+                <!-- 课程列表由JS生成 -->
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="showPage('main')">
+                    <span class="icon">📚</span>
+                    <span class="label">课程</span>
+                </div>
+                <div class="nav-item" onclick="showPage('stats')">
+                    <span class="icon">📊</span>
+                    <span class="label">统计</span>
+                </div>
+                <div class="nav-item" onclick="toggleTheme()">
+                    <span class="icon">🎨</span>
+                    <span class="label">主题</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 课程详情页 -->
+        <div class="lesson-page" id="lessonPage">
+            <div class="lesson-header">
+                <span class="back-btn" onclick="closeLesson()">←</span>
+                <span class="lesson-title" id="lessonTitle">课程标题</span>
+            </div>
+            <div class="lesson-content" id="lessonContent">
+                <!-- 内容 -->
+            </div>
+            <div class="lesson-actions">
+                <button class="btn btn-secondary" onclick="closeLesson()">返回</button>
+                <button class="btn btn-primary" id="completeBtn" onclick="markComplete()">标记完成</button>
+            </div>
+        </div>
+        
+        <!-- 统计页 -->
+        <div class="stats-page" id="statsPage">
+            <div class="header">
+                <h1>📊 学习统计</h1>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statCompleted">0</div>
+                <div class="stat-label">已完成课程</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statProgress">0%</div>
+                <div class="stat-label">总进度</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statStreak">1</div>
+                <div class="stat-label">连续学习(天)</div>
+            </div>
+            <button class="btn btn-secondary" onclick="showPage('main')" style="margin-top: 20px;">返回课程</button>
+        </div>
+    </div>
+
+    <script>
+        // 课程数据
+        const courses = [
+            {
+                id: 1,
+                title: '第1课：变量与数据类型',
+                desc: '学习Python基础概念，掌握变量定义和基本数据类型',
+                content: `
+                    <h3>什么是变量？</h3>
+                    <p>变量是存储数据的容器。在Python中，你不需要声明类型，直接赋值即可。</p>
+                    
+                    <h3>基本数据类型</h3>
+                    <div class="code-block"><pre>name = "小明"      # 字符串(str)
+age = 18          # 整数(int)
+height = 1.75     # 浮点数(float)
+is_student = True # 布尔值(bool)</pre></div>
+                    
+                    <h3>类型转换</h3>
+                    <div class="code-block"><pre>age_str = str(18)      # "18"
+age_int = int("18")    # 18
+price = float("19.99") # 19.99</pre></div>
+                    
+                    <h3>练习</h3>
+                    <p>创建一个变量存储你的名字，另一个变量存储你的年龄，然后打印出来。</p>
+                `,
+                code: 'name = "小明"\nage = 18\nprint("我叫", name, "今年", age, "岁")'
+            },
+            {
+                id: 2,
+                title: '第2课：运算符',
+                desc: '掌握算术、比较和逻辑运算符的使用',
+                content: `
+                    <h3>算术运算符</h3>
+                    <div class="code-block"><pre>a = 10
+b = 3
+print(a + b)   # 加法: 13
+print(a - b)   # 减法: 7
+print(a * b)   # 乘法: 30
+print(a / b)   # 除法: 3.33...
+print(a // b)  # 整除: 3
+print(a % b)   # 取余: 1
+print(a ** b)  # 幂: 1000</pre></div>
+                    
+                    <h3>比较运算符</h3>
+                    <div class="code-block"><pre>print(5 == 5)   # True
+print(5 != 3)   # True
+print(5 > 3)    # True
+print(5 <= 3)   # False</pre></div>
+                    
+                    <h3>逻辑运算符</h3>
+                    <div class="code-block"><pre>age = 18
+print(age > 13 and age < 20)  # True
+print(age < 13 or age > 20)   # False
+print(not age > 20)           # True</pre></div>
+                `,
+                code: 'a = 10\nb = 3\nprint(a + b)\nprint(a // b)'
+            },
+            {
+                id: 3,
+                title: '第3课：条件语句',
+                desc: '学习if-else判断，让程序做出选择',
+                content: `
+                    <h3>if 语句</h3>
+                    <div class="code-block"><pre>age = 18
+if age >= 18:
+    print("成年人")</pre></div>
+                    
+                    <h3>if-else 语句</h3>
+                    <div class="code-block"><pre>score = 85
+if score >= 60:
+    print("及格")
+else:
+    print("不及格")</pre></div>
+                    
+                    <h3>if-elif-else 语句</h3>
+                    <div class="code-block"><pre>score = 85
+if score >= 90:
+    print("优秀")
+elif score >= 80:
+    print("良好")
+elif score >= 60:
+    print("及格")
+else:
+    print("不及格")</pre></div>
+                    
+                    <h3>练习</h3>
+                    <p>写一个程序，判断一个数是正数、负数还是零。</p>
+                `,
+                code: 'age = 18\nif age >= 18:\n    print("成年人")\nelse:\n    print("未成年人")'
+            },
+            {
+                id: 4,
+                title: '第4课：循环语句',
+                desc: '掌握for和while循环，重复执行代码',
+                content: `
+                    <h3>for 循环</h3>
+                    <div class="code-block"><pre># 遍历范围
+for i in range(5):
+    print(i)  # 0, 1, 2, 3, 4
+
+# 遍历列表
+fruits = ["苹果", "香蕉", "橙子"]
+for fruit in fruits:
+    print(fruit)</pre></div>
+                    
+                    <h3>while 循环</h3>
+                    <div class="code-block"><pre>count = 0
+while count < 5:
+    print(count)
+    count += 1</pre></div>
+                    
+                    <h3>循环控制</h3>
+                    <div class="code-block"><pre>for i in range(10):
+    if i == 5:
+        break      # 跳出循环
+    if i % 2 == 0:
+        continue   # 跳过当前迭代
+    print(i)</pre></div>
+                    
+                    <h3>练习</h3>
+                    <p>用循环打印 1 到 10 的所有偶数。</p>
+                `,
+                code: 'for i in range(5):\n    print(i)'
+            },
+            {
+                id: 5,
+                title: '第5课：函数基础',
+                desc: '学习定义和调用函数，代码复用',
+                content: `
+                    <h3>定义函数</h3>
+                    <div class="code-block"><pre>def greet(name):
+    """打招呼函数"""
+    return "你好, " + name
+
+# 调用函数
+message = greet("小明")
+print(message)</pre></div>
+                    
+                    <h3>带参数的函数</h3>
+                    <div class="code-block"><pre>def add(a, b):
+    return a + b
+
+result = add(3, 5)
+print(result)  # 8</pre></div>
+                    
+                    <h3>默认参数</h3>
+                    <div class="code-block"><pre>def greet(name, greeting="你好"):
+    return f"{greeting}, {name}!"
+
+print(greet("小明"))          # 你好, 小明!
+print(greet("小明", "早上好"))  # 早上好, 小明!</pre></div>
+                    
+                    <h3>练习</h3>
+                    <p>写一个函数，计算两个数的和、差、积、商。</p>
+                `,
+                code: 'def greet(name):\n    return "你好, " + name\nprint(greet("小明"))'
+            },
+            {
+                id: 6,
+                title: '第6课：列表与元组',
+                desc: '掌握序列数据类型的使用',
+                content: `
+                    <h3>列表（List）</h3>
+                    <p>列表是可变的序列，用方括号定义。</p>
+                    <div class="code-block"><pre>fruits = ["苹果", "香蕉", "橙子"]
+fruits.append("葡萄")      # 添加元素
+fruits.insert(1, "芒果")   # 插入元素
+fruits.remove("香蕉")      # 删除元素
+print(fruits[0])           # 访问元素: 苹果
+print(len(fruits))         # 长度: 4</pre></div>
+                    
+                    <h3>列表切片</h3>
+                    <div class="code-block"><pre>numbers = [0, 1, 2, 3, 4, 5]
+print(numbers[1:4])   # [1, 2, 3]
+print(numbers[:3])    # [0, 1, 2]
+print(numbers[3:])    # [3, 4, 5]</pre></div>
+                    
+                    <h3>元组（Tuple）</h3>
+                    <p>元组是不可变的序列，用圆括号定义。</p>
+                    <div class="code-block"><pre>coordinates = (10, 20)
+# coordinates[0] = 15  # 错误！元组不可修改</pre></div>
+                `,
+                code: 'fruits = ["苹果", "香蕉"]\nfruits.append("橙子")\nprint(fruits[0])'
+            },
+            {
+                id: 7,
+                title: '第7课：字典与集合',
+                desc: '学习映射和集合类型',
+                content: `
+                    <h3>字典（Dict）</h3>
+                    <p>字典是键值对的集合，用花括号定义。</p>
+                    <div class="code-block"><pre>student = {
+    "name": "小明",
+    "age": 18,
+    "grade": "A"
+}
+
+print(student["name"])     # 访问
+student["age"] = 19        # 修改
+student["school"] = "一中" # 添加
+print(student.keys())      # 所有键
+print(student.values())    # 所有值</pre></div>
+                    
+                    <h3>字典遍历</h3>
+                    <div class="code-block"><pre>for key, value in student.items():
+    print(f"{key}: {value}")</pre></div>
+                    
+                    <h3>集合（Set）</h3>
+                    <p>集合是无序不重复的元素集。</p>
+                    <div class="code-block"><pre>numbers = {1, 2, 3, 3, 3}
+print(numbers)  # {1, 2, 3}
+
+# 集合运算
+a = {1, 2, 3}
+b = {2, 3, 4}
+print(a & b)    # 交集: {2, 3}
+print(a | b)    # 并集: {1, 2, 3, 4}</pre></div>
+                `,
+                code: 'student = {"name": "小明", "age": 18}\nprint(student["name"])'
+            },
+            {
+                id: 8,
+                title: '第8课：字符串操作',
+                desc: '掌握字符串处理方法',
+                content: `
+                    <h3>字符串基础</h3>
+                    <div class="code-block"><pre>text = "  Hello World  "
+print(text.strip())       # 去除空格: "Hello World"
+print(text.lower())       # 转小写: "  hello world  "
+print(text.upper())       # 转大写: "  HELLO WORLD  "
+print(text.replace("Hello", "Hi"))  # 替换</pre></div>
+                    
+                    <h3>字符串格式化</h3>
+                    <div class="code-block"><pre>name = "小明"
+age = 18
+
+# f-string (推荐)
+print(f"{name}今年{age}岁")
+
+# format 方法
+print("{}今年{}岁".format(name, age))</pre></div>
+                    
+                    <h3>字符串分割与连接</h3>
+                    <div class="code-block"><pre>text = "苹果,香蕉,橙子"
+fruits = text.split(",")
+print(fruits)  # ['苹果', '香蕉', '橙子']
+
+new_text = "-".join(fruits)
+print(new_text)  # 苹果-香蕉-橙子</pre></div>
+                    
+                    <h3>练习</h3>
+                    <p>将一个字符串反转并打印。</p>
+                `,
+                code: 'name = "小明"\nprint(f"你好, {name}")'
+            }
+        ];
+        
+        // 学习进度
+        let progress = JSON.parse(localStorage.getItem('pythonProgress') || '{"completed":[]}');
+        let currentCourse = null;
+        
+        // 初始化
+        function init() {
+            renderCourseList();
+            updateProgress();
+        }
+        
+        // 渲染课程列表
+        function renderCourseList() {
+            const list = document.getElementById('courseList');
+            list.innerHTML = courses.map(course => `
+                <div class="course-item ${progress.completed.includes(course.id) ? 'completed' : ''}" 
+                     onclick="openLesson(${course.id})">
+                    <div class="course-title">${course.title}</div>
+                    <div class="course-desc">${course.desc}</div>
+                    <div class="course-meta">
+                        <span>第 ${course.id} 课</span>
+                        <span>${progress.completed.includes(course.id) ? '已完成' : '未学习'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            const completed = progress.completed.length;
+            const total = courses.length;
+            const percentage = Math.round((completed / total) * 100);
+            
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `已完成 ${completed}/${total} 课`;
+            
+            // 更新统计页
+            document.getElementById('statCompleted').textContent = completed;
+            document.getElementById('statProgress').textContent = percentage + '%';
+        }
+        
+        // 打开课程
+        function openLesson(courseId) {
+            currentCourse = courses.find(c => c.id === courseId);
+            if (!currentCourse) return;
+            
+            document.getElementById('lessonTitle').textContent = currentCourse.title;
+            document.getElementById('lessonContent').innerHTML = currentCourse.content + 
+                '<h3>代码示例</h3><div class="code-block"><pre>' + currentCourse.code + '</pre></div>';
+            
+            const btn = document.getElementById('completeBtn');
+            if (progress.completed.includes(courseId)) {
+                btn.textContent = '✅ 已完成';
+                btn.className = 'btn btn-success';
+                btn.disabled = true;
+            } else {
+                btn.textContent = '标记完成';
+                btn.className = 'btn btn-primary';
+                btn.disabled = false;
+            }
+            
+            document.getElementById('lessonPage').classList.add('active');
+        }
+        
+        // 关闭课程
+        function closeLesson() {
+            document.getElementById('lessonPage').classList.remove('active');
+            currentCourse = null;
+        }
+        
+        // 标记完成
+        function markComplete() {
+            if (!currentCourse) return;
+            
+            if (!progress.completed.includes(currentCourse.id)) {
+                progress.completed.push(currentCourse.id);
+                localStorage.setItem('pythonProgress', JSON.stringify(progress));
+                
+                renderCourseList();
+                updateProgress();
+                
+                const btn = document.getElementById('completeBtn');
+                btn.textContent = '✅ 已完成';
+                btn.className = 'btn btn-success';
+                btn.disabled = true;
+            }
+        }
+        
+        // 切换页面
+        function showPage(page) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            if (page === 'main') {
+                document.getElementById('mainPage').style.display = 'flex';
+                document.getElementById('statsPage').classList.remove('active');
+                document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+            } else if (page === 'stats') {
+                document.getElementById('mainPage').style.display = 'none';
+                document.getElementById('statsPage').classList.add('active');
+                document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+                updateProgress();
+            }
+        }
+        
+        // 主题切换
+        let isDark = true;
+        function toggleTheme() {
+            isDark = !isDark;
+            document.body.classList.toggle('theme-light', !isDark);
+        }
+        
+        // 启动
+        init();
+    </script>
+</body>
+</html>
